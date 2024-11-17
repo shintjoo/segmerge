@@ -10,7 +10,7 @@ target_compile_features(run PUBLIC cxx_std_17)
 # Set CUDA flags
 set_target_properties(run PROPERTIES
   CUDA_SEPARABLE_COMPILATION ON
-  CUDA_ARCHITECTURES "86"
+  CUDA_ARCHITECTURES "70"
 )
 
 # Define include directories
