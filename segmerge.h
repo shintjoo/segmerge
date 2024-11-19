@@ -10,7 +10,7 @@
 #include <thrust/remove.h>
 #include <thrust/execution_policy.h>
 
-template<typename K, typename T>
+/* template<typename K, typename T>
 void gold_segmerge(
   std::vector<K>& key_a, 
   std::vector<K>& key_b,
@@ -52,7 +52,53 @@ int segmerge(
   T* val_a_d, T* val_b_d, T* val_c_d,
   int* seg_d, int* seg_c_d, 
   int n, int m
-); 
+);  */
+
+template<typename K, typename T>
+void gold_segmerge(
+  std::vector<K>& key_a,
+  std::vector<K>& key_b,
+  std::vector<K>& key_c,
+  std::vector<T>& val_a,
+  std::vector<T>& val_b,
+  std::vector<T>& val_c,
+  int n_a,
+  int n_b,
+  std::vector<int>& seg_a,
+  std::vector<int>& seg_b,
+  std::vector<int>& seg_c
+);
+
+template<typename K, typename T>
+void merge(
+  std::vector<K>& key_a,
+  std::vector<K>& key_b,
+  std::vector<K>& key_c,
+  std::vector<T>& val_a,
+  std::vector<T>& val_b,
+  std::vector<T>& val_c,
+  int begin_a, int end_a,
+  int begin_b, int end_b,
+  std::map<K, T>& merged_map,
+  std::vector<int>& seg_c
+);
+
+template<typename K, typename T>
+void gold_segsort(
+  std::vector<K>& key,
+  std::vector<T>& val,
+  int n,
+  std::vector<int>& seg,
+  int m
+);
+
+template<typename K, typename T>
+int segmerge(
+  K* key_a_d, K* key_b_d, K* key_c_d,
+  T* val_a_d, T* val_b_d, T* val_c_d,
+  int* seg_a_d, int* seg_b_d, int* seg_c_d,
+  int n_a, int n_b, int m_a, int m_b
+);
 
 void print(
   const std::vector<int>& seg,
@@ -76,7 +122,7 @@ void print(
  *   val_c: vals of merged array C
  *   seg_c: segs of merged array C  
  **************************************/
-template<typename K, typename T>
+/* template<typename K, typename T>
 void gold_segmerge(
   std::vector<K>& key_a, 
   std::vector<K>& key_b,
@@ -98,9 +144,44 @@ void gold_segmerge(
           mergedMap, seg_c);
   }
   seg_c.pop_back();
-}
+} */
 
 template<typename K, typename T>
+void gold_segmerge(
+  std::vector<K>& key_a,
+  std::vector<K>& key_b,
+  std::vector<K>& key_c,
+  std::vector<T>& val_a,
+  std::vector<T>& val_b,
+  std::vector<T>& val_c,
+  int n_a,
+  int n_b,
+  std::vector<int>& seg_a,
+  std::vector<int>& seg_b,
+  std::vector<int>& seg_c
+) {
+  std::map<K, T> merged_map;
+  int m_a = seg_a.size();
+  int m_b = seg_b.size();
+
+  for (int i = 0; i < std::max(m_a, m_b); i++) {
+    int begin_a = (i < m_a) ? seg_a[i] : n_a;
+    int end_a = (i + 1 < m_a) ? seg_a[i + 1] : n_a;
+    int begin_b = (i < m_b) ? seg_b[i] : n_b;
+    int end_b = (i + 1 < m_b) ? seg_b[i + 1] : n_b;
+
+    merge<K, T>(
+      key_a, key_b, key_c,
+      val_a, val_b, val_c,
+      begin_a, end_a,
+      begin_b, end_b,
+      merged_map, seg_c
+    );
+  }
+  seg_c.pop_back();
+}
+
+/* template<typename K, typename T>
 void merge(
   std::vector<K>& key_a,
   std::vector<K>& key_b,
@@ -124,6 +205,35 @@ void merge(
   }
   int last = seg_c.back();
   seg_c.emplace_back(last+mergedMap.size());
+} */
+
+template<typename K, typename T>
+void merge(
+  std::vector<K>& key_a,
+  std::vector<K>& key_b,
+  std::vector<K>& key_c,
+  std::vector<T>& val_a,
+  std::vector<T>& val_b,
+  std::vector<T>& val_c,
+  int begin_a, int end_a,
+  int begin_b, int end_b,
+  std::map<K, T>& merged_map,
+  std::vector<int>& seg_c
+) {
+  merged_map.clear();
+  for (int i = begin_a; i < end_a; i++) {
+    merged_map[key_a[i]] += val_a[i];
+  }
+  for (int i = begin_b; i < end_b; i++) {
+    merged_map[key_b[i]] += val_b[i];
+  }
+
+  for (auto& [key, val] : merged_map) {
+    key_c.push_back(key);
+    val_c.push_back(val);
+  }
+  int last = seg_c.empty() ? 0 : seg_c.back();
+  seg_c.push_back(last + merged_map.size());
 }
 
 template<typename K, typename T>
@@ -154,7 +264,7 @@ void gold_segsort(
   }
 }
 
-template<typename K, typename T>
+/* template<typename K, typename T>
 int segmerge(
   K* key_a_d, K* key_b_d, K* key_c_d,
   T* val_a_d, T* val_b_d, T* val_c_d,
@@ -188,6 +298,48 @@ int segmerge(
 
   cudaFree(count);
   
+  return key_new_end - key_c_ptr;
+} */
+
+template<typename K, typename T>
+int segmerge(
+  K* key_a_d, K* key_b_d, K* key_c_d,
+  T* val_a_d, T* val_b_d, T* val_c_d,
+  int* seg_a_d, int* seg_b_d, int* seg_c_d,
+  int n_a, int n_b, int m_a, int m_b
+) {
+  bb_segsort(key_a_d, val_a_d, n_a, seg_a_d, m_a);
+  bb_segsort(key_b_d, val_b_d, n_b, seg_b_d, m_b);
+
+  unsigned num_threads = 256;
+  unsigned num_blocks = (std::max(m_a, m_b) + num_threads - 1) / num_threads;
+
+  filln<<<num_blocks, num_threads>>>(
+    key_a_d, key_b_d, key_c_d,
+    val_a_d, val_b_d, val_c_d,
+    seg_a_d, seg_b_d, seg_c_d,
+    n_a, n_b
+  );
+
+  bb_segsort(key_c_d, val_c_d, n_a + n_b, seg_c_d, std::max(m_a, m_b));
+
+  int* count;
+  cudaMalloc(&count, sizeof(int) * std::max(m_a, m_b));
+  merge<<<num_blocks, num_threads>>>(
+    key_c_d, val_c_d, seg_c_d, count, n_a + n_b, std::max(m_a, m_b)
+  );
+
+  thrust::device_ptr<K> key_c_ptr(key_c_d);
+  thrust::device_ptr<T> val_c_ptr(val_c_d);
+  auto key_new_end = thrust::remove(thrust::device, key_c_ptr, key_c_ptr + (n_a + n_b), -1);
+  auto val_new_end = thrust::remove(thrust::device, val_c_ptr, val_c_ptr + (n_a + n_b), -1);
+
+  thrust::device_ptr<int> count_ptr(count);
+  thrust::exclusive_scan(count_ptr, count_ptr + std::max(m_a, m_b), count_ptr);
+  sub<<<num_blocks, num_threads>>>(seg_c_d, count, std::max(m_a, m_b));
+
+  cudaFree(count);
+
   return key_new_end - key_c_ptr;
 }
 

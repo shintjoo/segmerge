@@ -1,6 +1,6 @@
 #include <cuda.h>
-/* 
-template<typename K, typename T>
+
+/* template<typename K, typename T>
 __global__ void filln(
   K* key_a, K* key_b, K* key_c,
   T* val_a, T* val_b, T* val_c,
@@ -30,59 +30,29 @@ template<typename K, typename T>
 __global__ void filln(
   K* key_a, K* key_b, K* key_c,
   T* val_a, T* val_b, T* val_c,
-  int* seg_a, int* seg_b, int* seg_c, 
-  int n, int m_a, int m_b)
+  int* seg_a, int* seg_b, int* seg_c,
+  int n_a, int n_b, int m)
 {
   unsigned tid = threadIdx.x + blockIdx.x * blockDim.x;
+  if (tid < m) {
+    int beg_a = seg_a[tid];
+    int end_a = (tid + 1) < m ? seg_a[tid+1] : n_a;
+    int beg_b = seg_b[tid];
+    int end_b = (tid + 1) < m ? seg_b[tid+1] : n_b;
+    int sz_a = end_a - beg_a;
+    int sz_b = end_b - beg_b;
 
-  if (tid < m_a || tid < m_b) {
-    int beg_a = (tid < m_a) ? seg_a[tid] : n;
-    int end_a = (tid + 1 < m_a) ? seg_a[tid + 1] : n;
+    std::size_t i = beg_a;
+    std::size_t j = beg_b;
+    std::size_t k = beg_a + beg_b;
 
-    int beg_b = (tid < m_b) ? seg_b[tid] : n;
-    int end_b = (tid + 1 < m_b) ? seg_b[tid + 1] : n;
-
-    // Calculate the combined segment range
-    int beg_c = min(beg_a, beg_b);
-    int end_c = max(end_a, end_b);
-
-    // Initialize pointers for merging
-    int i = beg_a;
-    int j = beg_b;
-    int k = beg_c;
-
-    // Merge values from A and B into C
     while (i < end_a && j < end_b) {
-      if (key_a[i] < key_b[j]) {
-        key_c[k] = key_a[i];
-        val_c[k] = val_a[i];
-        i++;
-      } else {
-        key_c[k] = key_b[j];
-        val_c[k] = val_b[j];
-        j++;
-      }
+      key_c[k] = (k % 2 == 0) ? key_a[i++] : key_b[j++];
+      val_c[k] = (k % 2 == 0) ? val_a[i - 1] : val_b[j - 1];
       k++;
     }
 
-    // Copy remaining elements from A
-    while (i < end_a) {
-      key_c[k] = key_a[i];
-      val_c[k] = val_a[i];
-      i++;
-      k++;
-    }
-
-    // Copy remaining elements from B
-    while (j < end_b) {
-      key_c[k] = key_b[j];
-      val_c[k] = val_b[j];
-      j++;
-      k++;
-    }
-
-    // Store new segment boundary
-    seg_c[tid] = beg_c;
+    seg_c[tid] = beg_a + beg_b;
   }
 }
 
