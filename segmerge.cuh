@@ -31,14 +31,14 @@ __global__ void filln(
   K* key_a, K* key_b, K* key_c,
   T* val_a, T* val_b, T* val_c,
   int* seg_a, int* seg_b, int* seg_c,
-  int n_a, int n_b, int m)
+  int n_a, int n_b, int m_a, int m_b)
 {
   unsigned tid = threadIdx.x + blockIdx.x * blockDim.x;
-  if (tid < m) {
+  if (tid < m_a) { // TODO fix M
     int beg_a = seg_a[tid];
-    int end_a = (tid + 1) < m ? seg_a[tid+1] : n_a;
+    int end_a = (tid + 1) < m_a ? seg_a[tid+1] : n_a; // TODO fix M
     int beg_b = seg_b[tid];
-    int end_b = (tid + 1) < m ? seg_b[tid+1] : n_b;
+    int end_b = (tid + 1) < m_a ? seg_b[tid+1] : n_b; // TODO fix M
     int sz_a = end_a - beg_a;
     int sz_b = end_b - beg_b;
 

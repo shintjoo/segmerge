@@ -88,7 +88,7 @@ void gold_segsort(
   std::vector<K>& key,
   std::vector<T>& val,
   int n,
-  std::vector<int>& seg,
+  const std::vector<int>& seg, 
   int m
 );
 
@@ -318,7 +318,7 @@ int segmerge(
     key_a_d, key_b_d, key_c_d,
     val_a_d, val_b_d, val_c_d,
     seg_a_d, seg_b_d, seg_c_d,
-    n_a, n_b
+    n_a, n_b, m_a, m_b
   );
 
   bb_segsort(key_c_d, val_c_d, n_a + n_b, seg_c_d, std::max(m_a, m_b));
