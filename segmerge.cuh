@@ -34,25 +34,37 @@ __global__ void filln(
   int n_a, int n_b, int m_a, int m_b)
 {
   unsigned tid = threadIdx.x + blockIdx.x * blockDim.x;
-  if (tid < m_a) { // TODO fix M
+  if (tid < m_a && tid < m_b) {
     int beg_a = seg_a[tid];
-    int end_a = (tid + 1) < m_a ? seg_a[tid+1] : n_a; // TODO fix M
+    int end_a = (tid + 1) < m_a ? seg_a[tid+1] : n_a;
+
     int beg_b = seg_b[tid];
-    int end_b = (tid + 1) < m_a ? seg_b[tid+1] : n_b; // TODO fix M
+    int end_b = (tid + 1) < m_b ? seg_b[tid+1] : n_b;
+
     int sz_a = end_a - beg_a;
     int sz_b = end_b - beg_b;
 
+    int beg_c = beg_a + beg_b;
+    seg_c[tid] = beg_c;
+
     std::size_t i = beg_a;
     std::size_t j = beg_b;
-    std::size_t k = beg_a + beg_b;
+    std::size_t k = beg_c;
 
-    while (i < end_a && j < end_b) {
-      key_c[k] = (k % 2 == 0) ? key_a[i++] : key_b[j++];
-      val_c[k] = (k % 2 == 0) ? val_a[i - 1] : val_b[j - 1];
-      k++;
+    while (i < end_a || j < end_b) {
+      if (i < end_a) {
+        key_c[k] = key_a[i];
+        val_c[k] = val_a[i];
+        i++;
+        k++;
+      }
+      if (j < end_b) {
+        key_c[k] = key_b[j];
+        val_c[k] = val_b[j];
+        j++;
+        k++;
+      }
     }
-
-    seg_c[tid] = beg_a + beg_b;
   }
 }
 

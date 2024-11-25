@@ -61,8 +61,6 @@ int main (int argc, char* argv[]) {
 
   // Segmentations
   std::vector<int> seg_a, seg_b, seg_c;
-  int m_a = seg_a.size();
-  int m_b = seg_b.size();
   int start_a = 0, start_b = 0;
   
   while (start_a < n_a) {
@@ -76,7 +74,9 @@ int main (int argc, char* argv[]) {
     int sz = std::rand() % max_seg_size + min_seg_size;
     start_b = seg_b.back() + sz;
   }
-  
+
+  int m_a = seg_a.size();
+  int m_b = seg_b.size();
   seg_c.emplace_back(0);
   
   // allocate GPU memory
