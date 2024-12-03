@@ -44,12 +44,9 @@ __global__ void filln(
     int sz_a = end_a - beg_a;
     int sz_b = end_b - beg_b;
 
-    int beg_c = beg_a + beg_b;
-    seg_c[tid] = beg_c;
-
     std::size_t i = beg_a;
-    std::size_t j = beg_b;
-    std::size_t k = beg_c;
+    std::size_t j = beg_a + beg_b;
+    std::size_t k = beg_a + beg_b + sz_b;
 
     while (i < end_a || j < end_b) {
       if (i < end_a) {
