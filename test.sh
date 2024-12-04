@@ -10,9 +10,11 @@
 module load nvidia/cuda/11.8.0
 module load gcc/11.3.0
 
+rm -rf build
+
 mkdir build
 cd build
 cmake ..
 make
 make test
-./run 128
+./run 131072
