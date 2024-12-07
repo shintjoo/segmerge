@@ -92,6 +92,7 @@ int main (int argc, char* argv[]) {
 
   int m_a = seg_a.size();
   int m_b = seg_b.size();
+  int m_c = max(m_a, m_b);
   seg_c.emplace_back(0);
   
   // allocate GPU memory
@@ -118,11 +119,11 @@ int main (int argc, char* argv[]) {
   CUDA_CHECK(err, "alloc val_b_d");
   err = cudaMalloc(&val_c_d, sizeof(T)*(n_a + n_b));
   CUDA_CHECK(err, "alloc val_c_d");
-  err = cudaMalloc(&seg_a_d, sizeof(int)*seg_a.size());
+  err = cudaMalloc(&seg_a_d, sizeof(int)*m_a);
   CUDA_CHECK(err, "alloc seg_a_d");
-  err = cudaMalloc(&seg_b_d, sizeof(int)*seg_b.size());
+  err = cudaMalloc(&seg_b_d, sizeof(int)*m_b);
   CUDA_CHECK(err, "alloc seg_b_d");
-  err = cudaMalloc(&seg_c_d, sizeof(int)*seg_c.size());
+  err = cudaMalloc(&seg_c_d, sizeof(int)*m_c);
   CUDA_CHECK(err, "alloc seg_c_d");
 
   // copy data from host to device
@@ -134,9 +135,9 @@ int main (int argc, char* argv[]) {
   CUDA_CHECK(err, "copy to val_a_d"); 
   err = cudaMemcpy(val_b_d, &val_b[0], sizeof(T)*n_b, cudaMemcpyHostToDevice);
   CUDA_CHECK(err, "copy to val_b_d"); 
-  err = cudaMemcpy(seg_a_d, &seg_a[0], sizeof(int)*seg_a.size(), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(seg_a_d, &seg_a[0], sizeof(int)*m_a, cudaMemcpyHostToDevice);
   CUDA_CHECK(err, "copy to seg_a_d"); 
-  err = cudaMemcpy(seg_b_d, &seg_b[0], sizeof(int)*seg_b.size(), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(seg_b_d, &seg_b[0], sizeof(int)*m_b, cudaMemcpyHostToDevice);
   CUDA_CHECK(err, "copy to seg_b_d");
 
   auto begin = std::chrono::steady_clock::now();
@@ -153,10 +154,10 @@ int main (int argc, char* argv[]) {
     << std::endl;
 
   // copy data from device to host
-  std::vector<int> seg_c_h(seg_c.size());
+  std::vector<int> seg_c_h(m_c);
   std::vector<K> key_c_h(new_n); 
   std::vector<T> val_c_h(new_n); 
-  err = cudaMemcpy(&seg_c_h[0], seg_c_d, sizeof(int)*seg_c.size(), cudaMemcpyDeviceToHost);
+  err = cudaMemcpy(&seg_c_h[0], seg_c_d, sizeof(int)*m_c, cudaMemcpyDeviceToHost);
   CUDA_CHECK(err, "copy from seg_c_d");
   err = cudaMemcpy(&key_c_h[0], key_c_d, sizeof(K)*new_n, cudaMemcpyDeviceToHost); 
   CUDA_CHECK(err, "copy from key_c_d");

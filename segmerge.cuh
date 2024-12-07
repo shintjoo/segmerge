@@ -45,8 +45,8 @@ __global__ void filln(
     int sz_b = end_b - beg_b;
 
     std::size_t i = beg_a;
-    std::size_t j = beg_a + beg_b;
-    std::size_t k = beg_a + beg_b + sz_b;
+    std::size_t j = beg_b;
+    std::size_t k = beg_a + beg_b;
 
     while (i < end_a || j < end_b) {
       if (i < end_a) {
@@ -62,6 +62,36 @@ __global__ void filln(
         k++;
       }
     }
+    seg_c[tid] = beg_a + beg_b;
+  } else { // Add on the final segment(s?)
+    int beg;
+    int end;
+    int *key;
+    int *val;
+    int n;
+    if (m_a > m_b) {
+      beg = seg_a[tid];
+      end = (tid + 1) < m_a ? seg_a[tid+1] : n_a;
+      key = key_a;
+      val = val_a;
+      n = n_b;
+    } else {
+      beg = seg_b[tid];
+      end = (tid + 1) < m_b ? seg_b[tid+1] : n_b;
+      key = key_b;
+      val = val_b;
+      n = n_a;
+    }
+    int k = n + 1 + beg;
+    seg_c[tid] = k - 1;
+    int i = beg;
+    while (i < end) {
+      key_c[k] = key[i];
+      val_c[k] = val[i];
+      i++;
+      k++;
+    }
+    
   }
 }
 
