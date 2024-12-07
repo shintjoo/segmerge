@@ -50,7 +50,11 @@ int main (int argc, char* argv[]) {
   std::cout << "Smallest seg size : " << min_seg_size << std::endl; 
 
   // seed
+#ifdef DEBUG
+  srand(123);
+#else
   srand(static_cast<unsigned>(time(0)));
+#endif
 
   // create arrays for key_a, key_b, val_a, val_b
   std::vector<K> key_a(n_a);
