@@ -347,6 +347,7 @@ void print(
   const std::vector<int>& seg,
   const std::vector<int>& key)
 {
+#ifdef DEBUG
   for (int i = 0; i < seg.size(); i++) {
     int end = (i+1)<seg.size() ? seg[i+1] : key.size();
     std::cout << "[ ";
@@ -356,4 +357,5 @@ void print(
     std::cout << "] ";
   }
   std::cout << std::endl;
+#endif
 }

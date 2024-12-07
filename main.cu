@@ -159,6 +159,10 @@ int main (int argc, char* argv[]) {
   err = cudaMemcpy(&val_c_h[0], val_c_d, sizeof(T)*new_n, cudaMemcpyDeviceToHost);
   CUDA_CHECK(err, "copy from val_c_d");
 
+  print(seg_a, key_a);
+  print(seg_b, key_b);
+  print(seg_c_h, key_c_h);
+
   // free GPU memory
   err = cudaFree(key_a_d);
   CUDA_CHECK(err, "free key_a_d");
@@ -186,12 +190,11 @@ int main (int argc, char* argv[]) {
   gold_segmerge(key_a, key_b, key_c,
                 val_a, val_b, val_c,
                 n_a, n_b, seg_a, seg_b, seg_c);
+  print(seg_c, key_c);
   end = std::chrono::steady_clock::now();
   std::cout << "CPU runtime (us) : " <<
     std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
     << std::endl;
-
-  return 0;
 
   // check
   int cnt = 0;
