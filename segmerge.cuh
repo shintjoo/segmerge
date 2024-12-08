@@ -63,7 +63,7 @@ __global__ void filln(
       }
     }
     seg_c[tid] = beg_a + beg_b;
-  } else { // Add on the final segment(s?)
+  } else if (tid < max(m_a, m_b)) { // Add on the final segment(s?)
     int beg;
     int end;
     int *key;
@@ -82,8 +82,8 @@ __global__ void filln(
       val = val_b;
       n = n_a;
     }
-    int k = n + 1 + beg;
-    seg_c[tid] = k - 1;
+    int k = n + beg;
+    seg_c[tid] = k;
     int i = beg;
     while (i < end) {
       key_c[k] = key[i];

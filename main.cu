@@ -167,6 +167,15 @@ int main (int argc, char* argv[]) {
   print(seg_a, key_a);
   print(seg_b, key_b);
   print(seg_c_h, key_c_h);
+  // int curseg = 1;
+  // for (int i = 0; i < n_a + n_b ; i++ ) {
+  //   if (i == seg_c_h[curseg]) {
+  //     curseg++;
+  //     printf(" SEG ");
+  //   }
+  //   printf("%d ",key_c_h[i]);
+  // }
+  // printf("\n");
 
   // free GPU memory
   err = cudaFree(key_a_d);
