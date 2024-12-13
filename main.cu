@@ -17,24 +17,14 @@ int main (int argc, char* argv[]) {
   using K = int;
   using T = int;
 
-  /* if (argc != 3) {
+  if (argc != 3) {
     std::cerr << "usage: ./run n_a n_b\n";
     std::exit(1);
   }
 
   // params
   int n_a = std::atoi(argv[1]); // size of array A
-  int n_b = std::atoi(argv[2]); // size of array B */
-
-
-  if (argc != 2) {
-    std::cerr << "usage: ./run n_a\n";
-    std::exit(1);
-  }
-
-  // params
-  int n_a = std::atoi(argv[1]); // size of array A
-  int n_b = n_a * 2; // size of array B
+  int n_b = std::atoi(argv[2]); // size of array B
 
   int largest_key = 20;
   int max_seg_size = 10;
