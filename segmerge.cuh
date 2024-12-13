@@ -1,6 +1,7 @@
 #include <cuda.h>
 
-/* template<typename K, typename T>
+/* // Original filln
+template<typename K, typename T>
 __global__ void filln(
   K* key_a, K* key_b, K* key_c,
   T* val_a, T* val_b, T* val_c,
@@ -26,6 +27,7 @@ __global__ void filln(
   }
 } */
 
+/* //updated filln
 template<typename K, typename T>
 __global__ void filln(
   K* key_a, K* key_b, K* key_c,
@@ -92,6 +94,7 @@ __global__ void filln(
   }
 }
 
+// Original merge
 template<typename K, typename T>
 __global__ void merge(
   K* key, T* val, int* seg, int* count, int n, int m)
@@ -122,6 +125,84 @@ __global__ void merge(
     count[tid] = du; 
   }
 }
+
+*/
+
+// Attempt to merge filln and merge
+template<typename K, typename T>
+__global__ void filln_merge(
+  K* key_a, K* key_b, K* key_c,
+  T* val_a, T* val_b, T* val_c,
+  int* seg_a, int* seg_b, int* seg_c,
+  int* count,
+  int n_a, int n_b, int m_a, int m_b)
+{
+  unsigned tid = threadIdx.x + blockIdx.x * blockDim.x;
+
+  if (tid < max(m_a, m_b)) {
+    // Determine segment boundaries for both arrays
+    int beg_a = (tid < m_a) ? seg_a[tid] : n_a;
+    int end_a = (tid + 1 < m_a) ? seg_a[tid + 1] : n_a;
+    int beg_b = (tid < m_b) ? seg_b[tid] : n_b;
+    int end_b = (tid + 1 < m_b) ? seg_b[tid + 1] : n_b;
+
+    int i = beg_a;
+    int j = beg_b;
+    int k = beg_a + beg_b;
+    int du = 0;
+
+    K currentKey = 0;
+    T currentSum = 0;
+    bool hasCurrent = false;
+
+    // Merge and fill simultaneously
+    while (i < end_a || j < end_b) {
+      K key_i = (i < end_a) ? key_a[i] : INT_MAX;
+      K key_j = (j < end_b) ? key_b[j] : INT_MAX;
+
+      K selectedKey;
+      T selectedVal;
+
+      if (key_i < key_j) {
+        selectedKey = key_i;
+        selectedVal = val_a[i++];
+      } else if (key_i > key_j) {
+        selectedKey = key_j;
+        selectedVal = val_b[j++];
+      } else {
+        selectedKey = key_i;
+        selectedVal = val_a[i++] + val_b[j++];
+      }
+
+      // Merge duplicates on the fly
+      if (!hasCurrent || selectedKey != currentKey) {
+        if (hasCurrent) {
+          key_c[k] = currentKey;
+          val_c[k] = currentSum;
+          k++;
+        }
+        currentKey = selectedKey;
+        currentSum = selectedVal;
+        hasCurrent = true;
+      } else {
+        currentSum += selectedVal;
+        du++;
+      }
+    }
+
+    // Write the last merged key-value pair
+    if (hasCurrent) {
+      key_c[k] = currentKey;
+      val_c[k] = currentSum;
+      k++;
+    }
+
+    // Update segment and duplicate count
+    seg_c[tid] = beg_a + beg_b;
+    count[tid] = du;
+  }
+}
+
 
 __global__ void sub(int* seg, int* count, int m)
 {

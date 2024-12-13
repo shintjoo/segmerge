@@ -264,7 +264,8 @@ void gold_segsort(
   }
 }
 
-/* template<typename K, typename T>
+/* // First Version of segmerge
+template<typename K, typename T>
 int segmerge(
   K* key_a_d, K* key_b_d, K* key_c_d,
   T* val_a_d, T* val_b_d, T* val_c_d,
@@ -300,7 +301,7 @@ int segmerge(
   
   return key_new_end - key_c_ptr;
 } */
-
+/* // updated segmerge for different size arrays
 template<typename K, typename T>
 int segmerge(
   K* key_a_d, K* key_b_d, K* key_c_d,
@@ -340,6 +341,49 @@ int segmerge(
 
   return key_new_end - key_c_ptr;
 }
+*/
+
+// segmerge for combined filln_merge kernal
+template<typename K, typename T>
+int segmerge(
+  K* key_a_d, K* key_b_d, K* key_c_d,
+  T* val_a_d, T* val_b_d, T* val_c_d,
+  int* seg_a_d, int* seg_b_d, int* seg_c_d,
+  int n_a, int n_b, int m_a, int m_b)
+{
+  unsigned num_threads = 256;
+  unsigned num_blocks = (std::max(m_a, m_b) + num_threads - 1) / num_threads;
+
+  // Allocate memory for the count array
+  int* count;
+  cudaMalloc(&count, sizeof(int) * std::max(m_a, m_b));
+
+  // Launch the combined fill and merge kernel
+  filln_merge<<<num_blocks, num_threads>>>(
+    key_a_d, key_b_d, key_c_d,
+    val_a_d, val_b_d, val_c_d,
+    seg_a_d, seg_b_d, seg_c_d,
+    count, n_a, n_b, m_a, m_b
+  );
+
+  thrust::device_ptr<K> key_c_ptr(key_c_d);
+  thrust::device_ptr<T> val_c_ptr(val_c_d);
+
+  // Remove invalid entries (marked as -1)
+  auto key_new_end = thrust::remove(thrust::device, key_c_ptr, key_c_ptr + (n_a + n_b), -1);
+  auto val_new_end = thrust::remove(thrust::device, val_c_ptr, val_c_ptr + (n_a + n_b), -1);
+
+  thrust::device_ptr<int> count_ptr(count);
+  thrust::exclusive_scan(count_ptr, count_ptr + std::max(m_a, m_b), count_ptr);
+
+  sub<<<num_blocks, num_threads>>>(seg_c_d, count, std::max(m_a, m_b));
+
+  cudaFree(count);
+
+  return key_new_end - key_c_ptr;
+}
+
+
 
 void print(
   const std::vector<int>& seg,
