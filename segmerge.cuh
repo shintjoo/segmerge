@@ -41,9 +41,6 @@ __global__ void filln(
     int beg_b = seg_b[tid];
     int end_b = (tid + 1) < m_b ? seg_b[tid+1] : n_b;
 
-    int sz_a = end_a - beg_a;
-    int sz_b = end_b - beg_b;
-
     std::size_t i = beg_a;
     std::size_t j = beg_b;
     std::size_t k = beg_a + beg_b;
