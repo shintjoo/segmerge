@@ -308,8 +308,6 @@ int segmerge(
   int* seg_a_d, int* seg_b_d, int* seg_c_d,
   int n_a, int n_b, int m_a, int m_b
 ) {
-  bb_segsort(key_a_d, val_a_d, n_a, seg_a_d, m_a);
-  bb_segsort(key_b_d, val_b_d, n_b, seg_b_d, m_b);
 
   unsigned num_threads = 256;
   unsigned num_blocks = (std::max(m_a, m_b) + num_threads - 1) / num_threads;
