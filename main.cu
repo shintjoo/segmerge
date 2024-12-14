@@ -85,6 +85,7 @@ int main (int argc, char* argv[]) {
   int m_c = max(m_a, m_b);
   seg_c.emplace_back(0);
   
+#ifndef SKIP_GPU
   // allocate GPU memory
   cudaError_t err;
   K* key_a_d;
@@ -187,6 +188,9 @@ int main (int argc, char* argv[]) {
   err = cudaFree(seg_c_d);
   CUDA_CHECK(err, "free seg_c_d");
 
+#endif
+
+#ifndef SKIP_CPU
   // CPU-based validation
   begin = std::chrono::steady_clock::now();
   gold_segsort(key_a, val_a, n_a, seg_a, m_a);
@@ -199,7 +203,7 @@ int main (int argc, char* argv[]) {
   std::cout << "CPU runtime (us) : " <<
     std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
     << std::endl;
-
+#ifndef SKIP_GPU
   // check
   int cnt = 0;
 
@@ -244,6 +248,8 @@ int main (int argc, char* argv[]) {
   //print(seg_c_h, key_c_h);
   //std::cout << "val_c_h:\n"; 
   //print(seg_c_h, val_c_h);
+#endif
+#endif
 
   return 0;
 }

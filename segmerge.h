@@ -10,6 +10,10 @@
 #include <thrust/remove.h>
 #include <thrust/execution_policy.h>
 
+// #define DEBUG
+// #define SKIP_CPU
+// #define SKIP_GPU
+
 /* template<typename K, typename T>
 void gold_segmerge(
   std::vector<K>& key_a, 
